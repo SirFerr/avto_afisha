@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
             label: 'Избранные мероприятия',
             onTap: () {
               // Логика перехода на экран избранных мероприятий
-              context.go('/favorites');
+              context.push('/favorites');
             },
           ),
           _buildProfileOption(
@@ -26,30 +26,30 @@ class ProfileScreen extends StatelessWidget {
             label: 'Купленные билеты',
             onTap: () {
               // Логика перехода на экран купленных билетов
-              context.go('/tickets');
+              context.push('/purchasedTickets');
             },
           ),
           _buildProfileOption(
             context,
-            label: 'Экран О приложении',
+            label: '"О приложении"',
             onTap: () {
               // Логика перехода на экран "О приложении"
-              context.go('/about');
+              context.push('/about');
             },
           ),
           _buildProfileOption(
             context,
-            label: 'Экран настроек',
+            label: 'Настройки',
             onTap: () {
               // Логика перехода на экран настроек
-              context.go('/settings');
+              context.push('/settings');
             },
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               // Логика выхода из аккаунта
-              context.go('/logout');
+              context.push('/logout');
             },
             child: const Text(
               'Выйти из аккаунта',

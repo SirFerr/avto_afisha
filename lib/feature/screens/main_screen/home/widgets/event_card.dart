@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import '../../../export_screens.dart';
-import '../event_model.dart';
+import '../../../../../models/event_model.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -14,71 +11,47 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push('/event');
+        // Переход на экран события при нажатии на карточку
+        context.push(
+          '/event',
+          extra: {
+            'eventName': event.description,
+            'description': event.description,
+            'imageUrls': [event.imageUrl],
+            'rating': event.rating ?? 0.0,
+            'date': event.date,
+            'location': event.location,
+            'price': event.price,
+            'comments': event.comments,
+          },
+        );
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Изображение события
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12.0)),
-              child: Image.network(
-                event.imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Название мероприятия
+              Text(
+                event.description,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Описание события
-                  Text(
-                    event.description,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Рейтинг, если есть
-                  if (event.rating != null)
-                    Row(
-                      children: [
-                        RatingBarIndicator(
-                          rating: event.rating!,
-                          itemBuilder: (context, index) => const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                          itemCount: 5,
-                          itemSize: 20.0,
-                          direction: Axis.horizontal,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('${event.rating}'),
-                      ],
-                    ),
-                  const SizedBox(height: 8),
-                  // Счетчик комментариев
-                  Text('Комментарии: ${event.commentCount}'),
-                  const SizedBox(height: 8),
-                  // Дата события
-                  Text(
-                    'Дата: ${DateFormat.yMMMMd().format(event.date)}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
+              const SizedBox(height: 8),
+              // Дата мероприятия
+              Text(
+                'Дата: ${event.date.toLocal().toString().split(' ')[0]}',
+                style: TextStyle(color: Colors.grey[600]),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

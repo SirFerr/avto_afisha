@@ -1,31 +1,36 @@
 import 'package:flutter/material.dart';
-import 'event_model.dart';
+import 'package:faker/faker.dart';
+import 'dart:math';
+import '../../../../models/event_model.dart';
 import 'widgets/event_card.dart';
 
 class HomeScreen extends StatelessWidget {
-   HomeScreen({super.key});
+  HomeScreen({super.key});
 
-  // Пример данных событий
-  final List<Event> events = [
-    Event(
-      imageUrl: 'https://example.com/event1.jpg',
-      description: 'Музей современного искусства',
-      rating: 4.5,
-      commentCount: 24,
-      date: DateTime.now().add(const Duration(days: 2)),
-    ),
-    Event(
-      imageUrl: 'https://example.com/event2.jpg',
-      description: 'Концерт классической музыки',
-      rating: null,
-      commentCount: 15,
-      date: DateTime.now().add(const Duration(days: 5)),
-    ),
-    // Добавьте больше событий по необходимости
-  ];
+  final faker = Faker();
+  final random = Random();
+
+  // Генерация случайных данных для списка событий
+  List<Event> generateRandomEvents(int count) {
+    return List.generate(count, (index) {
+      return Event(
+        eventName: faker.lorem.words(3).join(' '),
+        description: faker.lorem.sentences(2).join(' '),
+        imageUrl: 'https://picsum.photos/seed/${random.nextInt(1000)}/300/200',
+        rating: random.nextBool() ? random.nextDouble() * 5 : null,
+        date: DateTime.now().add(Duration(days: random.nextInt(30))),
+        location: faker.address.city(),
+        price: (random.nextDouble() * 100).roundToDouble(),
+        comments: List.generate(5, (i) => faker.lorem.sentence()),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Генерируем список случайных событий
+    final List<Event> events = generateRandomEvents(10);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Home')),
       body: ListView.builder(

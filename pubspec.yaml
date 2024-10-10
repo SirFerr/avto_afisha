@@ -36,7 +36,8 @@ dependencies:
   flutter_rating_bar: ^4.0.0
   intl: ^0.18.0
   faker: ^2.1.0
-
+  package_info_plus: ^4.0.0
+  shared_preferences: ^2.0.15
 
 
 

@@ -1,3 +1,9 @@
 export 'auth/export_auth.dart';
 export 'main_screen/export_main.dart';
 export 'event/event_export.dart';
+export 'favorite/export_favorite.dart';
+export 'purchased_tickets/export_purchased_tickets.dart';
+export 'ticket/export_ticket.dart';
+export 'about/export_about.dart';
+export 'purchase/export_purchase.dart';
+export 'settings/export_settings.dart';
