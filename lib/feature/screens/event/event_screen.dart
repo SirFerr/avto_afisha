@@ -3,7 +3,7 @@ import 'package:flutter/material.dart' as flutter;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:faker/faker.dart';
 import 'dart:math';
-import 'package:faker/faker.dart' as faker;
+import 'package:go_router/go_router.dart';
 
 
 class EventScreen extends StatelessWidget {
@@ -47,7 +47,7 @@ class EventScreen extends StatelessWidget {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                Navigator.pop(context);
+                context.pop();
               },
             ),
             actions: [
