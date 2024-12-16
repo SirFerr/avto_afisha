@@ -1,15 +1,12 @@
+import 'package:avto_afisha/models/exhibition_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class EventAppBar extends StatelessWidget {
-  final String eventName;
-  final String imageUrl;
+  final Exhibition exhibition;
 
-  const EventAppBar({
-    super.key,
-    required this.eventName,
-    required this.imageUrl,
-  });
+  const EventAppBar({super.key, required this.exhibition});
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +14,13 @@ class EventAppBar extends StatelessWidget {
       expandedHeight: 200.0,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
-        title: Text(eventName),
-        background: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
+        title: Text(exhibition.name),
+        background: CachedNetworkImage(
+          imageUrl: exhibition.image,
+          placeholder: (context, url) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
       ),
       leading: IconButton(

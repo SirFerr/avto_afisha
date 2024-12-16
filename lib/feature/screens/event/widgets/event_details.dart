@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../models/exhibition_model.dart';
 
 class EventDetails extends StatelessWidget {
-  final String eventName;
-  final String description;
-  final List<String> imageUrls;
-  final double rating;
-  final DateTime date;
-  final String location;
-  final double price;
+  final Exhibition exhibition;
 
   const EventDetails({
     super.key,
-    required this.eventName,
-    required this.description,
-    required this.imageUrls,
-    required this.rating,
-    required this.date,
-    required this.location,
-    required this.price,
+    required this.exhibition,
   });
 
   @override
@@ -32,7 +21,7 @@ class EventDetails extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            eventName,
+            exhibition.name,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
@@ -41,11 +30,17 @@ class EventDetails extends StatelessWidget {
           height: 150,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: imageUrls.length,
+            itemCount: 1,
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.network(imageUrls[index]),
+                child: CachedNetworkImage(
+                  imageUrl: exhibition.image,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                ),
               );
             },
           ),
@@ -56,7 +51,7 @@ class EventDetails extends StatelessWidget {
           child: Row(
             children: [
               RatingBarIndicator(
-                rating: rating,
+                rating: exhibition.rating ?? 0.0,
                 itemBuilder: (context, index) => const Icon(
                   Icons.star,
                   color: Colors.amber,
@@ -66,7 +61,7 @@ class EventDetails extends StatelessWidget {
                 direction: Axis.horizontal,
               ),
               const SizedBox(width: 8),
-              Text('${rating.toStringAsFixed(1)}/5'),
+              Text('${(exhibition.rating ?? 0.0).toStringAsFixed(1)}/5'),
             ],
           ),
         ),
@@ -76,11 +71,11 @@ class EventDetails extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Дата: ${DateFormat.yMMMMd().format(date)}'),
+              Text('Дата: ${DateFormat.yMMMMd().format(DateTime.parse(exhibition.date))}'),
               const SizedBox(height: 8),
-              Text('Место: $location'),
+              Text('Место: ${exhibition.location}'),
               const SizedBox(height: 8),
-              Text('Цена: \$$price'),
+              Text('Цена: \$${exhibition.price}'),
             ],
           ),
         ),
@@ -88,7 +83,7 @@ class EventDetails extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            description,
+            exhibition.description,
             maxLines: 5,
             overflow: TextOverflow.ellipsis,
           ),
@@ -98,15 +93,7 @@ class EventDetails extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ElevatedButton(
             onPressed: () {
-              context.push(
-                '/purchase',
-                extra: {
-                  'eventName': eventName,
-                  'date': date,
-                  'location': location,
-                  'price': price,
-                },
-              );
+              // Логика покупки события
             },
             child: const Text('Купить'),
           ),

@@ -11,11 +11,10 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(
+        Navigator.pushNamed(
+          context,
           '/event',
-          extra: {
-            'id': exhibition.id,
-          },
+          arguments: exhibition,
         );
       },
       child: Card(

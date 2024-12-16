@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../main.dart';
+import '../models/exhibition_model.dart';
 
 class AppRouter {
   GoRouter get router => GoRouter(
@@ -25,18 +26,11 @@ class AppRouter {
             path: '/event',
             builder: (context, state) {
               // Получаем данные из state.extra
-              final eventData = state.extra as Map<String, dynamic>;
+              final exhibition = state.extra as Exhibition;
 
               // Передаем данные в EventScreen
               return EventScreen(
-                eventName: eventData['eventName'],
-                description: eventData['description'],
-                imageUrls: eventData['imageUrls'],
-                rating: eventData['rating'],
-                date: eventData['date'],
-                location: eventData['location'],
-                price: eventData['price'],
-                comments: eventData['comments'],
+                exhibition: exhibition,
               );
             },
           ),
