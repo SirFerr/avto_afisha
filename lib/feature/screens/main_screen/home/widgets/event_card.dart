@@ -1,28 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../models/event_model.dart';
+import '../../../../../models/exhibition_model.dart';
 
 class EventCard extends StatelessWidget {
-  final Event event;
+  final Exhibition exhibition;
 
-  const EventCard({super.key, required this.event});
+  const EventCard({super.key, required this.exhibition});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Переход на экран события при нажатии на карточку
         context.push(
           '/event',
           extra: {
-            'eventName': event.description,
-            'description': event.description,
-            'imageUrls': [event.imageUrl],
-            'rating': event.rating ?? 0.0,
-            'date': event.date,
-            'location': event.location,
-            'price': event.price,
-            'comments': event.comments,
+            'id': exhibition.id,
           },
         );
       },
@@ -38,7 +30,7 @@ class EventCard extends StatelessWidget {
             children: [
               // Название мероприятия
               Text(
-                event.description,
+                exhibition.name,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -47,7 +39,7 @@ class EventCard extends StatelessWidget {
               const SizedBox(height: 8),
               // Дата мероприятия
               Text(
-                'Дата: ${event.date.toLocal().toString().split(' ')[0]}',
+                'Дата: ${exhibition.date}',
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],

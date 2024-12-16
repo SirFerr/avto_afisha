@@ -18,7 +18,7 @@ class AppRouter {
             builder: (context, state) => AuthScreen(),
           ),
           GoRoute(
-            path: '/home',
+            path: '/main',
             builder: (context, state) => MainScreen(),
           ),
           GoRoute(
