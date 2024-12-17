@@ -43,12 +43,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final exhibitions = data.map((e) => Exhibition.fromJson(e)).toList();
-        emit(SearchLoaded(exhibitions));
+        emit(SearchLoaded(exhibitions)); // Ensure search returns a list of exhibitions
       } else {
-        emit(SearchError('Failed to search events: ${response.reasonPhrase}'));
+        emit(SearchError('Failed to search exhibitions: ${response.reasonPhrase}'));
       }
     } catch (e) {
-      emit(SearchError('Failed to search events: $e'));
+      emit(SearchError('Failed to search exhibitions: $e'));
     }
   }
 }

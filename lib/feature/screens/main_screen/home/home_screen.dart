@@ -14,25 +14,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isSearchOpen = false; // Search input visibility
+  bool _isSearchOpen = false;
   final TextEditingController _searchController = TextEditingController();
 
   void _toggleSearch() {
     setState(() {
-      if (_isSearchOpen && _searchController.text.isNotEmpty) {
+      _isSearchOpen = !_isSearchOpen;
+      if (_searchController.text.isNotEmpty) {
         context.read<SearchBloc>().add(SearchQueryChanged(_searchController.text));
-      } else if (_isSearchOpen && _searchController.text.isEmpty) {
-        _isSearchOpen = false; // Close the search field
-      } else {
-        _isSearchOpen = true; // Open the search field
       }
     });
   }
 
   void _closeSearch() {
     setState(() {
-      _isSearchOpen = false;
-      _searchController.clear();
+      if(_searchController.text == "" || _searchController.text == ""){
+        _isSearchOpen = false;
+        _searchController.clear();
+      }// Reload events when search closes
     });
   }
 
@@ -65,6 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
             )
                 : const Text('Exhibitions'),
             actions: [
+              if (_isSearchOpen)
+              IconButton(
+                icon: const Icon(Icons.cancel_outlined),
+                onPressed: _searchController.clear,
+              ),
               IconButton(
                 icon: Icon(_isSearchOpen ? Icons.check : Icons.search),
                 onPressed: _toggleSearch,
@@ -72,11 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           body: BlocBuilder<SearchBloc, SearchState>(
-            builder: (context, state) {
-              if (state is SearchLoading) {
+            builder: (context, searchState) {
+              if (searchState is SearchLoading) {
                 return const Center(child: CircularProgressIndicator());
-              } else if (state is SearchLoaded) {
-                final exhibitions = state.exhibitions;
+              } else if (searchState is SearchLoaded) {
+                // Replace results with the search list
+                final exhibitions = searchState.exhibitions;
                 return exhibitions.isNotEmpty
                     ? ListView.builder(
                   itemCount: exhibitions.length,
@@ -84,21 +89,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     return EventCard(exhibition: exhibitions[index]);
                   },
                 )
-                    : const Center(child: Text('No results found.'));
-              } else if (state is SearchError) {
-                return Center(child: Text('Error: ${state.error}'));
+                    : const Center(child: Text('No search results found.'));
+              } else if (searchState is SearchError) {
+                return Center(child: Text('Error: ${searchState.error}'));
               }
+
+              // Default fallback to EventBloc
               return BlocBuilder<EventBloc, EventState>(
-                builder: (context, state) {
-                  if (state is EventLoading || state is EventInitial) {
+                builder: (context, eventState) {
+                  if (eventState is EventLoading || eventState is EventInitial) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (state is EventLoaded) {
+                  } else if (eventState is EventLoaded) {
                     return ListView.builder(
-                      itemCount: state.exhibitions.length,
+                      itemCount: eventState.exhibitions.length,
                       itemBuilder: (context, index) {
-                        return EventCard(exhibition: state.exhibitions[index]);
+                        return EventCard(exhibition: eventState.exhibitions[index]);
                       },
                     );
+                  } else if (eventState is EventError) {
+                    return Center(child: Text('Error: ${eventState.error}'));
                   }
                   return const SizedBox();
                 },
