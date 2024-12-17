@@ -6,8 +6,35 @@ import 'package:http/http.dart' as http;
 import 'blocs/event_bloc.dart';
 import 'blocs/search_bloc.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isSearchOpen = false; // Search input visibility
+  final TextEditingController _searchController = TextEditingController();
+
+  void _toggleSearch() {
+    setState(() {
+      if (_isSearchOpen && _searchController.text.isNotEmpty) {
+        context.read<SearchBloc>().add(SearchQueryChanged(_searchController.text));
+      } else if (_isSearchOpen && _searchController.text.isEmpty) {
+        _isSearchOpen = false; // Close the search field
+      } else {
+        _isSearchOpen = true; // Open the search field
+      }
+    });
+  }
+
+  void _closeSearch() {
+    setState(() {
+      _isSearchOpen = false;
+      _searchController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,129 +43,70 @@ class HomeScreen extends StatelessWidget {
         BlocProvider(create: (_) => EventBloc(httpClient: http.Client())..add(LoadEvents())),
         BlocProvider(create: (_) => SearchBloc(httpClient: http.Client())),
       ],
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Exhibitions'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: ExhibitionSearchDelegate(
-                    searchBloc: context.read<SearchBloc>(),
-                  ),
-                );
+      child: GestureDetector(
+        onTap: _closeSearch, // Close search input when clicking outside
+        child: Scaffold(
+          appBar: AppBar(
+            title: _isSearchOpen
+                ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              onSubmitted: (query) {
+                if (query.isNotEmpty) {
+                  context.read<SearchBloc>().add(SearchQueryChanged(query));
+                } else {
+                  _closeSearch();
+                }
               },
-            ),
-          ],
-        ),
-        body: BlocBuilder<EventBloc, EventState>(
-          builder: (context, state) {
-            if (state is EventInitial || state is EventLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is EventLoaded) {
-              return ListView.builder(
-                itemCount: state.exhibitions.length,
-                itemBuilder: (context, index) {
-                  return EventCard(exhibition: state.exhibitions[index]);
-                },
-              );
-            } else if (state is EventError) {
-              return Center(child: Text('Error: ${state.error}'));
-            }
-            return const SizedBox();
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class ExhibitionSearchDelegate extends SearchDelegate {
-  final SearchBloc searchBloc;
-
-  ExhibitionSearchDelegate({required this.searchBloc});
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-          searchBloc.add(SearchQueryChanged(query));
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    searchBloc.add(SearchQueryChanged(query));
-
-    return BlocBuilder<SearchBloc, SearchState>(
-      bloc: searchBloc,
-      builder: (context, state) {
-        if (state is SearchLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is SearchLoaded) {
-          final exhibitions = state.exhibitions;
-          if (exhibitions.isEmpty) {
-            return const Center(child: Text('No exhibitions found'));
-          }
-          return ListView.builder(
-            itemCount: exhibitions.length,
-            itemBuilder: (context, index) {
-              return EventCard(exhibition: exhibitions[index]);
-            },
-          );
-        } else if (state is SearchError) {
-          return Center(child: Text('Error: ${state.error}'));
-        }
-        return const Center(child: Text('Start typing to search'));
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    searchBloc.add(SearchQueryChanged(query));
-
-    return BlocBuilder<SearchBloc, SearchState>(
-      bloc: searchBloc,
-      builder: (context, state) {
-        if (state is SearchLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is SearchLoaded) {
-          final exhibitions = state.exhibitions;
-          return ListView.builder(
-            itemCount: exhibitions.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(exhibitions[index].name),
-                onTap: () {
-                  query = exhibitions[index].name;
-                  showResults(context);
+              decoration: const InputDecoration(
+                hintText: 'Search...',
+                border: InputBorder.none,
+              ),
+            )
+                : const Text('Exhibitions'),
+            actions: [
+              IconButton(
+                icon: Icon(_isSearchOpen ? Icons.check : Icons.search),
+                onPressed: _toggleSearch,
+              ),
+            ],
+          ),
+          body: BlocBuilder<SearchBloc, SearchState>(
+            builder: (context, state) {
+              if (state is SearchLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is SearchLoaded) {
+                final exhibitions = state.exhibitions;
+                return exhibitions.isNotEmpty
+                    ? ListView.builder(
+                  itemCount: exhibitions.length,
+                  itemBuilder: (context, index) {
+                    return EventCard(exhibition: exhibitions[index]);
+                  },
+                )
+                    : const Center(child: Text('No results found.'));
+              } else if (state is SearchError) {
+                return Center(child: Text('Error: ${state.error}'));
+              }
+              return BlocBuilder<EventBloc, EventState>(
+                builder: (context, state) {
+                  if (state is EventLoading || state is EventInitial) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is EventLoaded) {
+                    return ListView.builder(
+                      itemCount: state.exhibitions.length,
+                      itemBuilder: (context, index) {
+                        return EventCard(exhibition: state.exhibitions[index]);
+                      },
+                    );
+                  }
+                  return const SizedBox();
                 },
               );
             },
-          );
-        } else if (state is SearchError) {
-          return Center(child: Text('Error: ${state.error}'));
-        }
-        return const Center(child: Text('Start typing to search'));
-      },
+          ),
+        ),
+      ),
     );
   }
 }
