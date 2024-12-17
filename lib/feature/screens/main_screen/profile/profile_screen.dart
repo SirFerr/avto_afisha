@@ -49,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               // Логика выхода из аккаунта
-              context.push('/logout');
+              context.pushReplacement('/auth');
             },
             child: const Text(
               'Выйти из аккаунта',

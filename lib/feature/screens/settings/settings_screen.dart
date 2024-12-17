@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../../../theme/theme_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../theme/theme_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Настройки'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ListTile(
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, state) {
+            return ListTile(
               title: const Text('Темная тема'),
               trailing: Switch(
-                value: themeProvider.themeMode == ThemeMode.dark,
+                value: state is DarkThemeState,
                 onChanged: (value) {
-                  themeProvider.toggleTheme(value);
+                  context.read<ThemeCubit>().toggleTheme(value);
                 },
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

@@ -1,38 +1,34 @@
-import 'package:avto_afisha/routes/router.dart';
-import 'package:avto_afisha/theme/theme.dart';
-import 'package:avto_afisha/theme/theme_provider.dart';
+import 'package:avto_afisha/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'feature/locator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'routes/router.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  setupLocator();
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
-      child: const MyApp(),
-    ),
-  );
+void main() {
+  final router = AppRouter().router; // Создаем GoRouter один раз перед запуском
+  runApp(MyApp(router: router));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final GoRouter router;
+
+  const MyApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {
-    final appRouter = AppRouter();
-
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return  MaterialApp.router(
-          title: 'AvtoAfisha',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeProvider.themeMode,
-          routerConfig: appRouter.router,
-        );
-      },
+    return BlocProvider(
+      create: (_) => ThemeCubit(),
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, state) {
+          return MaterialApp.router(
+            title: 'Your App',
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode: state.themeMode, // Меняем тему без пересоздания GoRouter
+            routerConfig: router,       // Используем статический GoRouter
+          );
+        },
+      ),
     );
   }
 }

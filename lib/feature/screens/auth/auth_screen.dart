@@ -1,21 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/auth_bloc.dart';
 
-class AuthScreen extends StatelessWidget {
+class AuthScreen extends StatefulWidget {
+  @override
+  _AuthScreenState createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
+  bool isLoginMode = true;
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  Future<void> _saveUserData(String token, String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    await prefs.setString('role', role);
+  }
+
+  void _toggleAuthMode() {
+    setState(() {
+      isLoginMode = !isLoginMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => AuthBloc(),
       child: Scaffold(
-        appBar: AppBar(title: Text('Authentication')),
+        appBar: AppBar(title: Text(isLoginMode ? 'Login' : 'Register')),
         body: BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is AuthSuccess) {
-              Navigator.pushReplacementNamed(context, '/main', arguments: state.user);
+              await _saveUserData(state.data.token!, state.data.role!);
+              Navigator.pushReplacementNamed(context, '/main', arguments: state.data.token);
             } else if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.error)),
@@ -37,20 +59,44 @@ class AuthScreen extends StatelessWidget {
                       decoration: InputDecoration(labelText: 'Password'),
                       obscureText: true,
                     ),
+                    if (!isLoginMode)
+                      TextField(
+                        controller: confirmPasswordController,
+                        decoration: InputDecoration(labelText: 'Confirm Password'),
+                        obscureText: true,
+                      ),
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         final email = emailController.text;
                         final password = passwordController.text;
-                        context.read<AuthBloc>().add(LoginPressed(email, password));
+
+                        if (isLoginMode) {
+                          context.read<AuthBloc>().add(LoginPressed(email, password));
+                        } else {
+                          final confirmPassword = confirmPasswordController.text;
+                          if (password == confirmPassword) {
+                            context.read<AuthBloc>().add(RegisterPressed(email, password));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Passwords do not match')),
+                            );
+                          }
+                        }
                       },
-                      child: Text('Login'),
+                      child: Text(isLoginMode ? 'Login' : 'Register'),
+                    ),
+                    TextButton(
+                      onPressed: _toggleAuthMode,
+                      child: Text(
+                        isLoginMode
+                            ? 'Don\'t have an account? Register here'
+                            : 'Already have an account? Login here',
+                      ),
                     ),
                   ],
                 ),
               );
-            } else if (state is AuthSuccess) {
-              return Center(child: Text('Welcome, ${state.user.email}!'));
             }
             return Center(child: CircularProgressIndicator());
           },

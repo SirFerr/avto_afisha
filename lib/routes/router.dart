@@ -1,10 +1,8 @@
 import 'package:avto_afisha/feature/screens/export_screens.dart';
-import 'package:avto_afisha/feature/screens/favorite/favorite_screen.dart';
 import 'package:avto_afisha/feature/screens/main_screen/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../main.dart';
 import '../models/exhibition_model.dart';
 
 class AppRouter {
@@ -90,6 +88,7 @@ class AppRouter {
         redirect: (context, state) {
           // Если текущий путь корневой, то перенаправляем на /auth
           if (state.location == '/') {
+            return '/main';
             return '/auth';
           }
           // В остальных случаях возвращаем null, чтобы не было редиректа
