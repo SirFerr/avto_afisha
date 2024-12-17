@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider(create: (_) => SearchBloc(httpClient: http.Client())),
       ],
       child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
         onTap: _closeSearch, // Close search input when clicking outside
         child: Scaffold(
           appBar: AppBar(
@@ -107,7 +108,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     );
                   } else if (eventState is EventError) {
-                    return Center(child: Text('Error: ${eventState.error}'));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Error: ${eventState.error}'),
+                          SizedBox(height: 16), // Отступ между текстом и кнопкой
+                          ElevatedButton(
+                            onPressed: () {
+                              BlocProvider.of<EventBloc>(context).add(LoadEvents());
+                            },
+                            child: Text('Обновить'),
+                          ),
+                        ],
+                      ),
+                    );
                   }
                   return const SizedBox();
                 },

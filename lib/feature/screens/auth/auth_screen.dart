@@ -1,5 +1,7 @@
+import 'package:avto_afisha/feature/screens/event/widgets/event_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'blocs/auth_bloc.dart';
 
@@ -37,7 +39,7 @@ class _AuthScreenState extends State<AuthScreen> {
           listener: (context, state) async {
             if (state is AuthSuccess) {
               await _saveUserData(state.data.token!, state.data.role!);
-              Navigator.pushReplacementNamed(context, '/main', arguments: state.data.token);
+              context.pushReplacement('/main', extra: state.data.token);
             } else if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.error)),

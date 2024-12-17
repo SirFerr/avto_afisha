@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../models/exhibition_model.dart';
 
 class EventCard extends StatelessWidget {
@@ -11,11 +12,8 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/event',
-          arguments: exhibition,
-        );
+        print('Card tapped: ${exhibition.id}');
+        context.push('/event/${exhibition.id}');
       },
       child: Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

@@ -21,17 +21,15 @@ class AppRouter {
             builder: (context, state) => MainScreen(),
           ),
           GoRoute(
-            path: '/event',
+            path: '/event/:id',
             builder: (context, state) {
-              // Получаем данные из state.extra
-              final exhibition = state.extra as Exhibition;
-
-              // Передаем данные в EventScreen
+              final id = state.pathParameters['id']!;
               return EventScreen(
-                exhibition: exhibition,
+                id: id,
               );
             },
           ),
+
           GoRoute(
             path: '/purchase',
             builder: (context, state) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
 import 'blocs/favorite_bloc.dart';
@@ -18,7 +19,7 @@ class FavoritesScreen extends StatelessWidget {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
           ),
         ),
@@ -37,11 +38,7 @@ class FavoritesScreen extends StatelessWidget {
                   final exhibition = exhibitions[index];
                   return GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/event',
-                        arguments: exhibition,
-                      );
+                      context.push('/event/${exhibition.id}');
                     },
                     child: Card(
                       margin: const EdgeInsets.symmetric(

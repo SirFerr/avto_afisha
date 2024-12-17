@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:avto_afisha/constans/constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import '../../../../../models/exhibition_model.dart';
 
 // Event Events
@@ -18,11 +20,13 @@ class EventLoading extends EventState {}
 
 class EventLoaded extends EventState {
   final List<Exhibition> exhibitions;
+
   EventLoaded(this.exhibitions);
 }
 
 class EventError extends EventState {
   final String error;
+
   EventError(this.error);
 }
 
@@ -36,7 +40,10 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   Future<void> _onLoadEvents(LoadEvents event, Emitter<EventState> emit) async {
     emit(EventLoading());
     try {
-      final response = await httpClient.get(Uri.parse('$API/api/exhibitions'));
+      final response = await httpClient.get(
+        Uri.parse('$API/api/exhibitions'),
+        headers: {'Content-Type': 'application/json'},
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final exhibitions = data.map((e) => Exhibition.fromJson(e)).toList();

@@ -8,14 +8,14 @@ import 'widgets/event_details.dart';
 import 'widgets/event_comments.dart';
 
 class EventScreen extends StatelessWidget {
-  final Exhibition exhibition;
+  final String id;
 
-  const EventScreen({super.key, required this.exhibition});
+  const EventScreen({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => EventBloc(httpClient: http.Client())..add(LoadEventDetails(exhibition.id)),
+      create: (_) => EventBloc(httpClient: http.Client())..add(LoadEventDetails(id)),
       child: Scaffold(
         body: BlocBuilder<EventBloc, EventState>(
           builder: (context, state) {
