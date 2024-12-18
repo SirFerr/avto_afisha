@@ -2,11 +2,18 @@ import 'package:avto_afisha/feature/screens/export_screens.dart';
 import 'package:avto_afisha/feature/screens/main_screen/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/exhibition_model.dart';
+import '../feature/screens/auth/auth_notifier.dart';
+import '../locator.dart';
 
 class AppRouter {
+  final AuthNotifier authNotifier = locator<AuthNotifier>();
+
+
   GoRouter get router => GoRouter(
+        refreshListenable: authNotifier,
+
         routes: [
           GoRoute(
             path: '/',
@@ -29,7 +36,6 @@ class AppRouter {
               );
             },
           ),
-
           GoRoute(
             path: '/purchase',
             builder: (context, state) {
@@ -83,14 +89,21 @@ class AppRouter {
             builder: (context, state) => AboutAppScreen(),
           ),
         ],
-        redirect: (context, state) {
-          // Если текущий путь корневой, то перенаправляем на /auth
-          if (state.location == '/') {
-            return '/main';
+        redirect: (context, state) async {
+
+          final isAuthenticated = authNotifier.isAuthenticated;
+
+          // Если пользователь не авторизован, перенаправляем на /auth
+          if (!isAuthenticated && state.location != '/auth') {
             return '/auth';
           }
-          // В остальных случаях возвращаем null, чтобы не было редиректа
-          return null;
+
+          // Если пользователь авторизован, но находится на /auth, перенаправляем на /main
+          if (isAuthenticated && state.location == '/auth') {
+            return '/main';
+          }
+
+          return null; // Не перенаправлять
         },
       );
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../auth/auth_notifier.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -47,21 +50,20 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () {
-              // Логика выхода из аккаунта
+            onPressed: () async {
+              final authNotifier = context.read<AuthNotifier>();
+              await authNotifier.logout();
               context.pushReplacement('/auth');
             },
-            child: const Text(
-              'Выйти из аккаунта',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Выйти из аккаунта'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProfileOption(BuildContext context, {required String label, required VoidCallback onTap}) {
+  Widget _buildProfileOption(BuildContext context,
+      {required String label, required VoidCallback onTap}) {
     return ListTile(
       leading: const Icon(Icons.description),
       title: Text(label),

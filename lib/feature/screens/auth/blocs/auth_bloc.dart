@@ -23,9 +23,11 @@ class RegisterPressed extends AuthEvent {
   RegisterPressed(this.email, this.password);
 }
 
-class RefreshTokenPressed extends AuthEvent {}
+class CheckUserExists extends AuthEvent {
+  final String email;
 
-class LogoutPressed extends AuthEvent {}
+  CheckUserExists(this.email);
+}
 
 // Authentication States
 abstract class AuthState {}
@@ -46,33 +48,45 @@ class AuthFailure extends AuthState {
 
 class AuthLoading extends AuthState {}
 
+class UserExistsState extends AuthState {}
+
+class UserNotExistsState extends AuthState {}
+class AuthReset extends AuthEvent {}
+
+
 // Authentication Bloc
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(AuthInitial()) {
     on<LoginPressed>(_onLoginPressed);
     on<RegisterPressed>(_onRegisterPressed);
-    on<RefreshTokenPressed>(_onRefreshTokenPressed);
-    on<LogoutPressed>(_onLogoutPressed);
+    on<CheckUserExists>(_onCheckUserExists);
+    on<AuthReset>((event, emit) => emit(AuthInitial()));
+
   }
 
   Future<void> _onLoginPressed(LoginPressed event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       final response = await http.post(
-        Uri.parse('$API/auth/signin'),
+        Uri.parse('$API2/auth/signin'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': event.email, 'password': event.password}),
       );
 
       if (response.statusCode == 200) {
-        final data = ReqRes.fromJson(jsonDecode(response.body));
-        final prefs = await SharedPreferences.getInstance();
+        final responseData = jsonDecode(response.body);
+        final data = ReqRes(
+          statusCode: responseData['statusCode'],
+          token: responseData['token'],
+          refreshToken: responseData['refreshToken'],
+          expirationTime: responseData['expirationTime'],
+        );
 
-        await prefs.setString('token', data.token!);
-        await prefs.setString('refreshToken', data.refreshToken!);
-        await prefs.setString('role', data.role!);
-
-        emit(AuthSuccess(data));
+        if (data.token != null) {
+          emit(AuthSuccess(data));
+        } else {
+          emit(AuthFailure('Login failed: Missing token in response'));
+        }
       } else {
         emit(AuthFailure('Login failed: ${response.body}'));
       }
@@ -85,20 +99,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     try {
       final response = await http.post(
-        Uri.parse('$API/auth/signup'),
+        Uri.parse('$API2/auth/signup'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': event.email, 'password': event.password}),
+        body: jsonEncode({'email': event.email, 'password': event.password, 'role': 'user'}),
       );
 
       if (response.statusCode == 200) {
-        final data = ReqRes.fromJson(jsonDecode(response.body));
-        final prefs = await SharedPreferences.getInstance();
+        final responseData = jsonDecode(response.body);
+        final data = ReqRes(
+          statusCode: responseData['statusCode'],
+          token: responseData['token'],
+          refreshToken: responseData['refreshToken'],
+          expirationTime: responseData['expirationTime'],
+        );
 
-        await prefs.setString('token', data.token!);
-        await prefs.setString('refreshToken', data.refreshToken!);
-        await prefs.setString('role', data.role!);
-
-        emit(AuthSuccess(data));
+        if (data.token != null) {
+          emit(AuthSuccess(data));
+        } else {
+          emit(AuthFailure('Registration failed: Missing token in response'));
+        }
       } else {
         emit(AuthFailure('Registration failed: ${response.body}'));
       }
@@ -107,37 +126,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onRefreshTokenPressed(RefreshTokenPressed event, Emitter<AuthState> emit) async {
+  Future<void> _onCheckUserExists(CheckUserExists event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final refreshToken = prefs.getString('refreshToken');
-
-      final response = await http.post(
-        Uri.parse('$API/auth/refresh'),
+      final response = await http.get(
+        Uri.parse('$API2/user/find-user/${event.email}'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refreshToken': refreshToken}),
       );
 
       if (response.statusCode == 200) {
-        final data = ReqRes.fromJson(jsonDecode(response.body));
-        await prefs.setString('token', data.token!);
-        await prefs.setString('refreshToken', data.refreshToken!);
-
-        emit(AuthSuccess(data));
+        final userExists = jsonDecode(response.body) as bool;
+        if (userExists) {
+          emit(UserExistsState());
+        } else {
+          emit(UserNotExistsState());
+        }
       } else {
-        emit(AuthFailure('Token refresh failed: ${response.body}'));
+        emit(AuthFailure('Error checking user existence: ${response.body}'));
       }
     } catch (e) {
       emit(AuthFailure('Error: $e'));
     }
-  }
-
-  Future<void> _onLogoutPressed(LogoutPressed event, Emitter<AuthState> emit) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('refreshToken');
-    await prefs.remove('role');
-    emit(AuthInitial());
   }
 }
