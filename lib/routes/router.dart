@@ -10,10 +10,8 @@ import '../locator.dart';
 class AppRouter {
   final AuthNotifier authNotifier = locator<AuthNotifier>();
 
-
   GoRouter get router => GoRouter(
         refreshListenable: authNotifier,
-
         routes: [
           GoRoute(
             path: '/',
@@ -90,20 +88,21 @@ class AppRouter {
           ),
         ],
         redirect: (context, state) async {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('token');
 
-          final isAuthenticated = authNotifier.isAuthenticated;
-
-          // Если пользователь не авторизован, перенаправляем на /auth
-          if (!isAuthenticated && state.location != '/auth') {
+          // Если токен отсутствует, перенаправляем на /auth, кроме случаев, когда уже находимся на /auth
+          if (token == null && (state.location != '/auth' ||state.location != '/')) {
             return '/auth';
           }
 
-          // Если пользователь авторизован, но находится на /auth, перенаправляем на /main
-          if (isAuthenticated && state.location == '/auth') {
+          // Если токен есть, а пользователь пытается перейти на /auth, перенаправляем на /main
+          if (token != null && (state.location == '/auth' ||state.location == '/') ) {
             return '/main';
           }
 
-          return null; // Не перенаправлять
+          // По умолчанию не перенаправляем
+          return null;
         },
       );
 }

@@ -1,2 +1,2 @@
-var API = "http://192.168.163.1:8080";
-var API2 = "http://192.168.163.1:8081";
+var API = "http://exhibition-tesinitsyn.amvera.io";
+var API2 = "http://user-service-tesinitsyn.amvera.io";
